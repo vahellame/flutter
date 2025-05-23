@@ -1921,6 +1921,15 @@ abstract class FlutterCommand extends Command<void> {
     required bool releaseMode,
   }) async {
     if (!shouldRunPub) {
+      // Still run the minimal injectPlugins step.
+      //
+      // Otherwise would be run in "regeneratePlatformSpecificTooling", but if
+      // opted-out (--no-pub), we'd possibly be running in a different than
+      // expected state (e.g. not reflecting the latest "releaseMode").
+      await project.regeneratePlatformSpecificTooling(
+        releaseMode: featureFlags.isExplicitPackageDependenciesEnabled && releaseMode,
+        injectPluginsOnly: true,
+      );
       return;
     }
     await project.regeneratePlatformSpecificTooling(

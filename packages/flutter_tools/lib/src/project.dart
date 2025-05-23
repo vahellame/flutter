@@ -336,22 +336,50 @@ class FlutterProject {
   ///
   /// Will not create project platform directories if they do not already exist.
   ///
+  /// If [injectPluginsOnly] is `true`, only the plugin registrants will be
+  /// generated, and no other steps will be performed.
+  ///
   /// If [releaseMode] is `true`, platform-specific tooling and metadata generated
   /// may apply optimizations or changes that are only specific to release builds,
   /// such as not including dev-only dependencies.
   Future<void> regeneratePlatformSpecificTooling({
     DeprecationBehavior deprecationBehavior = DeprecationBehavior.none,
+    bool injectPluginsOnly = false,
     required bool releaseMode,
   }) async {
+    final bool androidPlatform = android.existsSync();
+    final bool iosPlatform = ios.existsSync();
+
+    // TODO(stuartmorgan): Revisit the conditions here once the plans for handling
+    // desktop in existing projects are in place.
+    final bool linuxPlatform = featureFlags.isLinuxEnabled && linux.existsSync();
+    final bool macOSPlatform = featureFlags.isMacOSEnabled && macos.existsSync();
+    final bool windowsPlatform = featureFlags.isWindowsEnabled && windows.existsSync();
+    final bool webPlatform = featureFlags.isWebEnabled && web.existsSync();
+
+    if (injectPluginsOnly) {
+      await injectPlugins(
+        this,
+        androidPlatform: androidPlatform,
+        iosPlatform: iosPlatform,
+        linuxPlatform: linuxPlatform,
+        macOSPlatform: macOSPlatform,
+        windowsPlatform: windowsPlatform,
+        releaseMode: releaseMode,
+      );
+      if (webPlatform) {
+        await injectBuildTimePluginFilesForWebPlatform(this, destination: web.dartpadToolDirectory);
+      }
+      return;
+    }
+
     return ensureReadyForPlatformSpecificTooling(
-      androidPlatform: android.existsSync(),
-      iosPlatform: ios.existsSync(),
-      // TODO(stuartmorgan): Revisit the conditions here once the plans for handling
-      // desktop in existing projects are in place.
-      linuxPlatform: featureFlags.isLinuxEnabled && linux.existsSync(),
-      macOSPlatform: featureFlags.isMacOSEnabled && macos.existsSync(),
-      windowsPlatform: featureFlags.isWindowsEnabled && windows.existsSync(),
-      webPlatform: featureFlags.isWebEnabled && web.existsSync(),
+      androidPlatform: androidPlatform,
+      iosPlatform: iosPlatform,
+      linuxPlatform: linuxPlatform,
+      macOSPlatform: macOSPlatform,
+      windowsPlatform: windowsPlatform,
+      webPlatform: webPlatform,
       deprecationBehavior: deprecationBehavior,
       releaseMode: releaseMode,
     );
@@ -432,6 +460,9 @@ class FlutterProject {
 abstract class FlutterProjectPlatform {
   /// Plugin's platform config key, e.g., "macos", "ios".
   String get pluginConfigKey;
+
+  /// Generates, or otherwise prepares, platform-specific files and configuration.
+  Future<void> ensureReadyForPlatformSpecificTooling();
 
   /// Whether the platform exists in the project.
   bool existsSync();
@@ -821,6 +852,7 @@ See the link below for more information:
     return parent.buildDirectory;
   }
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling({
     DeprecationBehavior deprecationBehavior = DeprecationBehavior.none,
   }) async {
@@ -1084,6 +1116,7 @@ class WebProject extends FlutterProjectPlatform {
   Directory get dartpadToolDirectory =>
       parent.directory.childDirectory('.dart_tool').childDirectory('dartpad');
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     /// Create .dart_tool/dartpad/web_plugin_registrant.dart.
     /// See: https://github.com/dart-lang/dart-services/pull/874

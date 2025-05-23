@@ -91,6 +91,7 @@ class WindowsProject extends FlutterProjectPlatform implements CmakeBasedProject
   /// initial project creation.
   Directory get runnerDirectory => _editableDirectory.childDirectory('runner');
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling() async {}
 }
 
@@ -138,6 +139,7 @@ class LinuxProject extends FlutterProjectPlatform implements CmakeBasedProject {
   @override
   Directory get pluginSymlinkDirectory => ephemeralDirectory.childDirectory('.plugin_symlinks');
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling() async {}
 
   String? get applicationId {

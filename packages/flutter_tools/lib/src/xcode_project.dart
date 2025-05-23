@@ -654,6 +654,7 @@ def __lldb_init_module(debugger: lldb.SBDebugger, _):
     return productName ?? XcodeBasedProject._defaultHostAppName;
   }
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     await _regenerateModuleFromTemplateIfNeeded();
     await _updateLLDBIfNeeded();
@@ -962,6 +963,7 @@ class MacOSProject extends XcodeBasedProject {
   /// scheme's target.
   File get nameFile => ephemeralDirectory.childFile('.app_filename');
 
+  @override
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     // TODO(stuartmorgan): Add create-from-template logic here.
     await _updateGeneratedXcodeConfigIfNeeded();
