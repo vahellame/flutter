@@ -733,7 +733,6 @@ Architecture _getNativeArchitecture(TargetPlatform targetPlatform) {
     case TargetPlatform.android_arm:
     case TargetPlatform.android_arm64:
     case TargetPlatform.android_x64:
-    case TargetPlatform.android_x86:
       throw Exception('Unknown targetPlatform: $targetPlatform.');
   }
 }
@@ -786,7 +785,6 @@ OS getNativeOSFromTargetPlatform(TargetPlatform platform) {
     case TargetPlatform.android_arm:
     case TargetPlatform.android_arm64:
     case TargetPlatform.android_x64:
-    case TargetPlatform.android_x86:
       return OS.android;
     case TargetPlatform.tester:
       if (const LocalPlatform().isMacOS) {
@@ -811,8 +809,6 @@ List<AndroidArch> _androidArchs(TargetPlatform targetPlatform, String? androidAr
       return <AndroidArch>[AndroidArch.arm64_v8a];
     case TargetPlatform.android_x64:
       return <AndroidArch>[AndroidArch.x86_64];
-    case TargetPlatform.android_x86:
-      return <AndroidArch>[AndroidArch.x86];
     case TargetPlatform.android:
       if (androidArchsEnvironment == null) {
         throw MissingDefineException(kAndroidArchs, 'native_assets');
